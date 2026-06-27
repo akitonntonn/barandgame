@@ -263,8 +263,9 @@ h2 {
 .ranking-list {
   min-height: 92px;
   margin: 0;
-  padding-left: 28px;
+  padding-left: 0;
   color: var(--text);
+  list-style: none;
   text-align: left;
 }
 
