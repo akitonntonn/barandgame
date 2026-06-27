@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>bar & Midnight Drink Judge</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app-shell">
+    <section id="titleScreen" class="screen screen-active title-screen" aria-labelledby="gameTitle">
+      <div class="brand-mark">bar &</div>
+      <h1 id="gameTitle">MIDNIGHT<br>DRINK JUDGE</h1>
+      <p class="subtitle">カウンター席で一杯を見極める、瞬間判断ゲーム</p>
+      <p class="message">冴えた判断で、飲む一杯を選ぼう。</p>
+      <button id="startButton" class="primary-button" type="button">スタート</button>
+      <button id="titleBgmButton" class="sound-button" type="button" aria-pressed="false">BGM ON</button>
+
+      <div class="ranking-panel">
+        <h2>スコアランキング</h2>
+        <div class="ranking-tabs" role="tablist" aria-label="ランキング切り替え">
+          <button class="ranking-tab active" type="button" data-ranking-mode="local">ローカル</button>
+          <button class="ranking-tab" type="button" data-ranking-mode="online">全体</button>
+        </div>
+        <ol id="titleRanking" class="ranking-list"></ol>
+      </div>
+    </section>
+
+    <section id="gameScreen" class="screen game-screen" aria-label="ゲーム画面">
+      <header class="hud">
+        <div class="hud-stats">
+          <div class="hud-item">
+            <span>スコア</span>
+            <strong id="scoreText">0</strong>
+          </div>
+          <div class="hud-item">
+            <span>コンボ</span>
+            <strong id="comboText">0</strong>
+          </div>
+          <div class="hud-item">
+            <span>LIFE</span>
+            <strong id="hpText" class="heart-life" aria-label="ライフ">♥♥♥♥♥</strong>
+          </div>
+          <div class="hud-item">
+            <span>時間</span>
+            <strong id="timerText">60</strong>
+          </div>
+          <div class="hud-item">
+            <span>Lv</span>
+            <strong id="levelText">1</strong>
+          </div>
+        </div>
+        <div class="hud-meters">
+          <div id="drunkMeterBox" class="meter-item drunk-meter">
+            <div class="meter-label">
+              <span>酔い</span>
+              <strong id="drunkMeterText">0%</strong>
+            </div>
+            <div class="meter-track">
+              <span id="drunkMeterFill"></span>
+            </div>
+          </div>
+          <div id="focusMeterBox" class="meter-item focus-meter">
+            <div class="meter-label">
+              <span>覚醒</span>
+              <strong id="focusMeterText">0%</strong>
+            </div>
+            <div class="meter-track">
+              <span id="focusMeterFill"></span>
+            </div>
+          </div>
+        </div>
+        <button id="pauseButton" class="icon-button menu-icon-button" type="button" aria-label="ゲームメニュー">
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </button>
+      </header>
+
+      <div id="barStage" class="bar-stage">
+        <div id="focusModeStatus" class="focus-mode-status" hidden></div>
+        <div class="backbar-glow" aria-hidden="true"></div>
+        <div class="shelf shelf-top" aria-hidden="true"></div>
+        <div class="shelf shelf-bottom" aria-hidden="true"></div>
+
+        <div id="bartenderSpeech" class="bartender-speech" aria-live="polite"></div>
+
+        <div id="bartender" class="bartender" aria-label="ドリンクを差し出すバーテンダー">
+          <img id="bartenderImage" class="bartender-image" src="assets/bartender.png" alt="">
+          <div class="bartender-fallback" aria-hidden="true">
+            <div class="bartender-head"></div>
+            <div class="bartender-body"></div>
+            <div class="bartender-arm"></div>
+          </div>
+        </div>
+
+        <div class="counter" aria-hidden="true"></div>
+
+        <div class="judge-area" aria-live="polite">
+          <div class="judge-bar" aria-label="判定の残り時間">
+            <span id="judgeBarFill"></span>
+          </div>
+
+          <article id="drinkCard" class="drink-card neutral">
+            <div id="drinkIcon" class="drink-icon">?</div>
+            <div class="drink-copy">
+              <p id="drinkCategory" class="drink-category">提供された一杯</p>
+              <h2 id="drinkName">準備中...</h2>
+            </div>
+          </article>
+
+          <div id="specialMessage" class="special-message" aria-live="polite"></div>
+          <div id="feedback" class="feedback" aria-live="polite"></div>
+          <p id="statusMessage" class="status-message">出された一杯を見て、「飲む」か「避ける」を選んでください。</p>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button id="drinkButton" class="action-button drink-action" type="button">
+          <span>飲む</span>
+          <small>F / ←</small>
+        </button>
+        <button id="avoidButton" class="action-button avoid-action" type="button">
+          <span>避ける</span>
+          <small>J / →</small>
+        </button>
+      </div>
+
+      <div id="gameMenuOverlay" class="game-menu-overlay" hidden>
+        <section class="game-menu-panel" aria-labelledby="gameMenuTitle">
+          <p class="game-menu-label">bar &</p>
+          <h2 id="gameMenuTitle">GAME MENU</h2>
+          <div class="game-menu-actions">
+            <button id="resumeButton" class="menu-button menu-primary" type="button">再開</button>
+            <button id="gameBgmToggleButton" class="menu-button" type="button">BGM ON</button>
+            <button id="quitGameButton" class="menu-button menu-danger" type="button">ゲーム終了</button>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section id="resultScreen" class="screen result-screen" aria-labelledby="resultTitle">
+      <div class="brand-mark">bar &</div>
+      <h1 id="resultTitle">リザルト</h1>
+      <p id="resultMessage" class="message">冴えた判断で、飲む一杯を選ぼう。</p>
+      <div class="result-card">
+        <div>
+          <span>スコア</span>
+          <strong id="finalScore">0</strong>
+        </div>
+        <div>
+          <span>最大コンボ</span>
+          <strong id="bestCombo">0</strong>
+        </div>
+        <div>
+          <span>レベル</span>
+          <strong id="finalLevel">1</strong>
+        </div>
+      </div>
+
+      <div class="ranking-panel">
+        <h2>スコアランキング</h2>
+        <div class="ranking-tabs" role="tablist" aria-label="ランキング切り替え">
+          <button class="ranking-tab active" type="button" data-ranking-mode="local">ローカル</button>
+          <button class="ranking-tab" type="button" data-ranking-mode="online">全体</button>
+        </div>
+        <ol id="resultRanking" class="ranking-list"></ol>
+      </div>
+
+      <div class="score-save-panel">
+        <label for="playerNameInput">名前</label>
+        <div class="score-save-row">
+          <input id="playerNameInput" type="text" maxlength="12" autocomplete="nickname" placeholder="NAME">
+          <button id="saveScoreButton" class="small-button" type="button">保存</button>
+        </div>
+        <p id="saveScoreMessage" class="save-score-message">名前を入れてランキングに保存できます。</p>
+      </div>
+
+      <button id="restartButton" class="primary-button" type="button">もう一度</button>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "bar-and-drink-judge",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "netlify dev",
+    "check": "node --check script.js && node --check netlify/functions/submit-score.js && node --check netlify/functions/get-ranking.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
