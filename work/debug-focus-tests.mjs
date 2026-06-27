@@ -218,6 +218,20 @@ check("mystery cannot be judged before reveal", getDrinkForJudgment() === null);
 state.currentResolvedDrink = { name: "Water", type: "nonAlcohol", correctAction: ACTIONS.drink };
 check("mystery uses resolved drink after reveal", getDrinkForJudgment().name === "Water");
 
+let rank = calculatePlayerRank(180000, 1000, 15, 10, 5);
+check("legend rank requires top thresholds", rank.code === "LEGEND");
+check("legend rank includes badges", rank.badges.includes("1000 COMBO達成") && rank.badges.includes("清醒ボーナス"));
+rank = calculatePlayerRank(180000, 999, 15, 10, 5);
+check("legend rank requires 1000 combo", rank.code !== "LEGEND");
+rank = calculatePlayerRank(75000, 500, 11, 30, 0);
+check("ss rank uses score combo and level", rank.code === "SS");
+rank = calculatePlayerRank(75000, 499, 11, 30, 0);
+check("ss rank requires combo threshold", rank.code !== "SS");
+rank = calculatePlayerRank(12000, 100, 5, 50, 0);
+check("b rank requires score combo and level", rank.code === "B");
+rank = calculatePlayerRank(12000, 99, 5, 50, 0);
+check("b rank requires combo threshold", rank.code !== "B");
+
 testResults;
 `;
 

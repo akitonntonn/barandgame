@@ -1452,11 +1452,44 @@ body.combo-effect-ultimate::after {
   transform: translateY(1px);
 }
 
+.result-rank-panel {
+  width: min(520px, 100%);
+  padding: 14px 16px;
+  border: 1px solid rgba(245, 212, 130, 0.36);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(245, 212, 130, 0.12), rgba(102, 233, 255, 0.08)),
+    rgba(4, 8, 18, 0.78);
+  box-shadow:
+    0 0 28px rgba(216, 168, 66, 0.16),
+    inset 0 0 22px rgba(255, 255, 255, 0.04);
+}
+
+.result-rank-panel strong {
+  display: block;
+  color: var(--gold-soft);
+  font-family: var(--font-title);
+  font-size: clamp(1.8rem, 7vw, 3.2rem);
+  line-height: 0.98;
+  letter-spacing: 0.06em;
+  text-shadow:
+    0 0 18px rgba(245, 212, 130, 0.62),
+    0 0 32px rgba(102, 233, 255, 0.22);
+}
+
+.result-rank-panel p {
+  margin: 8px 0 0;
+  color: rgba(247, 248, 251, 0.86);
+  font-size: 0.84rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
 .result-card {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 10px;
-  width: min(420px, 100%);
+  width: min(620px, 100%);
 }
 
 .result-card div {
@@ -1727,6 +1760,14 @@ body.combo-effect-ultimate::after {
 @media (max-width: 680px) {
   .screen {
     padding: 14px;
+  }
+
+  .result-rank-panel {
+    padding: 12px 13px;
+  }
+
+  .result-card {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .game-screen {

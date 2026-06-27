@@ -6,6 +6,7 @@ const MAX_HP = 100;
 const MAX_HEARTS = 5;
 const HEART_HP_VALUE = MAX_HP / MAX_HEARTS;
 const MAX_METER = 100;
+const MAX_LEVEL = 15;
 const FOCUS_MODE_SECONDS = 5;
 const FOCUS_JUDGE_BONUS_SECONDS = 0.6;
 const MAX_FOCUS_JUDGE_SECONDS = 3.6;
@@ -368,6 +369,9 @@ const state = {
   score: 0,
   combo: 0,
   bestCombo: 0,
+  finalRank: "Dランク：酔いすぎ注意",
+  finalRankCode: "D",
+  finalRankBadges: [],
   hp: MAX_HP,
   level: 1,
   maxTime: GAME_SECONDS,
@@ -459,6 +463,10 @@ const focusModeStatus = document.getElementById("focusModeStatus");
 const finalScore = document.getElementById("finalScore");
 const bestCombo = document.getElementById("bestCombo");
 const finalLevel = document.getElementById("finalLevel");
+const finalDrunkMeter = document.getElementById("finalDrunkMeter");
+const finalFocusCount = document.getElementById("finalFocusCount");
+const finalRank = document.getElementById("finalRank");
+const finalBadges = document.getElementById("finalBadges");
 const resultMessage = document.getElementById("resultMessage");
 const titleRanking = document.getElementById("titleRanking");
 const resultRanking = document.getElementById("resultRanking");
@@ -517,6 +525,9 @@ function startGame() {
     score: 0,
     combo: 0,
     bestCombo: 0,
+    finalRank: "Dランク：酔いすぎ注意",
+    finalRankCode: "D",
+    finalRankBadges: [],
     hp: MAX_HP,
     level: 1,
     maxTime: GAME_SECONDS,
@@ -688,7 +699,7 @@ function hideBartenderLine() {
 }
 
 function updateLevel() {
-  const nextLevel = Math.min(10, 1 + Math.floor(state.elapsed / 8));
+  const nextLevel = Math.min(MAX_LEVEL, 1 + Math.floor(state.elapsed / 8));
   if (nextLevel > state.level) {
     state.level = nextLevel;
     playLevelUpSound();
@@ -1535,9 +1546,22 @@ function endGame() {
   stopGameBgm();
   cancelAnimationFrame(state.animationId);
   showBartenderLine("gameOver", { duration: 1800 });
+  const rankResult = calculatePlayerRank(
+    state.score,
+    state.bestCombo,
+    state.level,
+    Math.round(state.drunkMeter),
+    state.focusModeCount
+  );
+  state.finalRank = rankResult.label;
+  state.finalRankCode = rankResult.code;
+  state.finalRankBadges = rankResult.badges;
+  updateResultRankDisplay(rankResult);
   finalScore.textContent = state.score;
   bestCombo.textContent = state.bestCombo;
   finalLevel.textContent = state.level;
+  finalDrunkMeter.textContent = `${Math.round(state.drunkMeter)}%`;
+  finalFocusCount.textContent = state.focusModeCount;
   resultMessage.textContent = state.quitByMenu
     ? "ゲームを終了しました。ここまでのスコアを保存できます。"
     : state.hp <= 0
@@ -1583,7 +1607,9 @@ async function saveCurrentResult() {
   saveScore(state.score, name, {
     bestCombo: state.bestCombo,
     level: state.level,
-    rank: getResultRankText(state.score),
+    rank: state.finalRank,
+    rankCode: state.finalRankCode,
+    badges: state.finalRankBadges,
     drunkMeter: Math.round(state.drunkMeter),
     focusCount: state.focusModeCount,
     playTime: Math.round(state.elapsed)
@@ -1658,7 +1684,7 @@ async function submitOnlineScore(playerName) {
         score: state.score,
         bestCombo: state.bestCombo,
         level: state.level,
-        rank: getResultRankText(state.score),
+        rank: state.finalRank,
         drunkMeter: Math.round(state.drunkMeter),
         focusCount: state.focusModeCount,
         playTime: Math.round(state.elapsed)
@@ -1761,12 +1787,54 @@ function sanitizeDisplayText(text) {
     .trim();
 }
 
-function getResultRankText(score) {
-  if (score >= 15000) return "Sランク：伝説の常連";
-  if (score >= 10000) return "Aランク：夜を制する者";
-  if (score >= 7000) return "Bランク：冴えた判断";
-  if (score >= 4000) return "Cランク：落ち着いた一杯";
-  return "Dランク：次の夜へ";
+function calculatePlayerRank(score, bestCombo, level, drunkMeter, focusCount) {
+  const badges = [];
+
+  if (drunkMeter <= 20 && score >= 25000) badges.push("清醒ボーナス");
+  if (focusCount >= 5) badges.push("覚醒マスター");
+  if (bestCombo >= 300) badges.push("コンボ職人");
+  if (bestCombo >= 777) badges.push("FEVER達成");
+  if (bestCombo >= 1000) badges.push("1000 COMBO達成");
+  if (drunkMeter >= 90) badges.push("飲みすぎ注意");
+
+  if (score >= 180000 && bestCombo >= 1000 && level >= 15) {
+    return { code: "LEGEND", label: "LEGEND：夜の支配者", badges };
+  }
+
+  if (score >= 120000 && bestCombo >= 777 && level >= 13) {
+    return { code: "SSS", label: "SSSランク：LUCKY NIGHT FEVER", badges };
+  }
+
+  if (score >= 75000 && bestCombo >= 500 && level >= 11) {
+    return { code: "SS", label: "SSランク：bar & VIP", badges };
+  }
+
+  if (score >= 45000 && bestCombo >= 300 && level >= 9) {
+    return { code: "S", label: "Sランク：伝説の常連", badges };
+  }
+
+  if (score >= 25000 && bestCombo >= 200 && level >= 7) {
+    return { code: "A", label: "Aランク：夜を制する者", badges };
+  }
+
+  if (score >= 12000 && bestCombo >= 100 && level >= 5) {
+    return { code: "B", label: "Bランク：冷静なお客さん", badges };
+  }
+
+  if (score >= 5000 && bestCombo >= 50) {
+    return { code: "C", label: "Cランク：まだ飲まされがち", badges };
+  }
+
+  return { code: "D", label: "Dランク：酔いすぎ注意", badges };
+}
+
+function updateResultRankDisplay(rankResult) {
+  if (finalRank) finalRank.textContent = rankResult.label;
+  if (!finalBadges) return;
+
+  finalBadges.textContent = rankResult.badges.length
+    ? rankResult.badges.join(" / ")
+    : "バッジなし";
 }
 
 // タイトル/リザルト用BGM。ブラウザ制限に合わせて、最初の操作後に再生します。
