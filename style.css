@@ -1143,6 +1143,121 @@ h2 {
   text-shadow: 0 0 24px rgba(255, 79, 115, 0.86);
 }
 
+.combo-milestone {
+  position: fixed;
+  left: 50%;
+  top: 42%;
+  z-index: 100;
+  width: min(86vw, 520px);
+  padding: 18px 20px;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  filter: blur(4px);
+  transform: translate(-50%, -50%) scale(0.84);
+  transition:
+    opacity 0.24s ease,
+    transform 0.24s ease,
+    filter 0.24s ease;
+}
+
+.combo-milestone.show {
+  opacity: 1;
+  filter: blur(0);
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.combo-milestone-title {
+  color: #ffe8a3;
+  font-family: var(--font-title);
+  font-size: clamp(42px, 13vw, 86px);
+  line-height: 0.9;
+  letter-spacing: 0.06em;
+  text-shadow:
+    0 0 10px rgba(255, 211, 92, 0.75),
+    0 0 28px rgba(255, 189, 48, 0.45),
+    0 0 48px rgba(70, 200, 255, 0.25);
+}
+
+.combo-milestone-subtitle {
+  margin-top: 10px;
+  color: #fff8dc;
+  font-family: var(--font-ui);
+  font-size: clamp(14px, 4vw, 20px);
+  font-weight: 800;
+  line-height: 1.35;
+  text-shadow: 0 0 14px rgba(0, 0, 0, 0.75);
+}
+
+.combo-milestone.good .combo-milestone-title {
+  color: #d9f8ff;
+}
+
+.combo-milestone.great .combo-milestone-title {
+  color: #ffe8a3;
+}
+
+.combo-milestone.excellent .combo-milestone-title {
+  color: #fff3bf;
+  animation: comboPulse 0.42s ease-in-out infinite alternate;
+}
+
+.combo-milestone.legend .combo-milestone-title {
+  color: #ffd76a;
+  animation: comboPulse 0.34s ease-in-out infinite alternate;
+}
+
+.combo-milestone.mythic .combo-milestone-title,
+.combo-milestone.fever .combo-milestone-title,
+.combo-milestone.god .combo-milestone-title {
+  color: #ffffff;
+  animation: comboUltimate 0.28s ease-in-out infinite alternate;
+}
+
+body.combo-effect-smallGlow::after,
+body.combo-effect-goldBurst::after,
+body.combo-effect-screenFlash::after,
+body.combo-effect-legendGlow::after,
+body.combo-effect-mythicBurst::after,
+body.combo-effect-fever::after,
+body.combo-effect-ultimate::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+}
+
+body.combo-effect-smallGlow::after {
+  background: radial-gradient(circle at center, rgba(70, 210, 255, 0.14), transparent 58%);
+}
+
+body.combo-effect-goldBurst::after {
+  background: radial-gradient(circle at center, rgba(255, 209, 92, 0.24), transparent 62%);
+}
+
+body.combo-effect-screenFlash::after {
+  background: radial-gradient(circle at center, rgba(255, 239, 180, 0.32), transparent 66%);
+  animation: comboFlash 0.65s ease-out;
+}
+
+body.combo-effect-legendGlow::after {
+  background:
+    radial-gradient(circle at center, rgba(255, 215, 90, 0.26), transparent 60%),
+    linear-gradient(135deg, rgba(40, 200, 255, 0.12), rgba(255, 80, 180, 0.1));
+  animation: comboFlash 0.8s ease-out;
+}
+
+body.combo-effect-mythicBurst::after,
+body.combo-effect-fever::after,
+body.combo-effect-ultimate::after {
+  background:
+    radial-gradient(circle at center, rgba(255, 245, 200, 0.34), transparent 48%),
+    radial-gradient(circle at 30% 20%, rgba(70, 210, 255, 0.22), transparent 40%),
+    radial-gradient(circle at 70% 80%, rgba(255, 80, 180, 0.22), transparent 42%);
+  animation: comboFlash 0.9s ease-out;
+}
+
 .action-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1501,6 +1616,50 @@ h2 {
   }
 }
 
+@keyframes comboPulse {
+  from {
+    transform: scale(1);
+    text-shadow:
+      0 0 12px rgba(255, 211, 92, 0.75),
+      0 0 30px rgba(255, 189, 48, 0.45);
+  }
+  to {
+    transform: scale(1.035);
+    text-shadow:
+      0 0 18px rgba(255, 239, 170, 0.95),
+      0 0 42px rgba(255, 189, 48, 0.65);
+  }
+}
+
+@keyframes comboUltimate {
+  from {
+    transform: scale(1) rotate(-0.5deg);
+    text-shadow:
+      0 0 14px rgba(255, 255, 255, 0.9),
+      0 0 34px rgba(255, 215, 90, 0.7),
+      0 0 58px rgba(70, 210, 255, 0.45);
+  }
+  to {
+    transform: scale(1.045) rotate(0.5deg);
+    text-shadow:
+      0 0 22px rgba(255, 255, 255, 1),
+      0 0 52px rgba(255, 215, 90, 0.9),
+      0 0 76px rgba(70, 210, 255, 0.65);
+  }
+}
+
+@keyframes comboFlash {
+  0% {
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 @keyframes stageFlash {
   0% {
     opacity: 0;
@@ -1709,6 +1868,21 @@ h2 {
     font-size: 0.9rem;
   }
 
+  .combo-milestone {
+    top: 39%;
+    width: min(90vw, 360px);
+    padding: 14px 12px;
+  }
+
+  .combo-milestone-title {
+    font-size: clamp(38px, 12vw, 62px);
+  }
+
+  .combo-milestone-subtitle {
+    margin-top: 7px;
+    font-size: clamp(13px, 3.5vw, 16px);
+  }
+
   .action-button {
     min-height: 86px;
   }
@@ -1767,6 +1941,15 @@ h2 {
   .special-message {
     margin-top: 5px;
     font-size: 0.82rem;
+  }
+
+  .combo-milestone {
+    top: 43%;
+    width: min(70vw, 420px);
+  }
+
+  .combo-milestone-title {
+    font-size: clamp(34px, 8vw, 58px);
   }
 
   .action-button {

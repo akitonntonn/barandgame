@@ -321,6 +321,31 @@ const BARTENDER_LINES = {
   ]
 };
 
+const COMBO_MILESTONES = [
+  { combo: 10, title: "10 COMBO", subtitle: "いい流れです。", rank: "good", effect: "smallGlow" },
+  { combo: 20, title: "20 COMBO", subtitle: "ノってきましたね。", rank: "good", effect: "smallGlow" },
+  { combo: 30, title: "30 COMBO", subtitle: "判断力、冴えてます。", rank: "great", effect: "goldBurst" },
+  { combo: 50, title: "50 COMBO", subtitle: "bar & 常連クラス。", rank: "great", effect: "goldBurst" },
+  { combo: 75, title: "75 COMBO", subtitle: "完璧なリズムです。", rank: "great", effect: "goldBurst" },
+  { combo: 100, title: "100 COMBO", subtitle: "NIGHT MASTER", rank: "excellent", effect: "screenFlash" },
+  { combo: 150, title: "150 COMBO", subtitle: "水を制する者が夜を制す。", rank: "excellent", effect: "screenFlash" },
+  { combo: 200, title: "200 COMBO", subtitle: "LEGENDARY GUEST", rank: "legend", effect: "legendGlow" },
+  { combo: 300, title: "300 COMBO", subtitle: "もう誰にも止められません。", rank: "legend", effect: "legendGlow" },
+  { combo: 500, title: "500 COMBO", subtitle: "bar & VIP", rank: "mythic", effect: "mythicBurst" },
+  { combo: 777, title: "777 COMBO", subtitle: "LUCKY NIGHT FEVER", rank: "fever", effect: "fever" },
+  { combo: 1000, title: "1000 COMBO", subtitle: "伝説の常連", rank: "god", effect: "ultimate" }
+];
+
+const COMBO_EFFECT_CLASSES = [
+  "combo-effect-smallGlow",
+  "combo-effect-goldBurst",
+  "combo-effect-screenFlash",
+  "combo-effect-legendGlow",
+  "combo-effect-mythicBurst",
+  "combo-effect-fever",
+  "combo-effect-ultimate"
+];
+
 const BARTENDER_LINE_PRIORITY = {
   serve: 1,
   lowHp: 2,
@@ -385,6 +410,7 @@ const state = {
   quitByMenu: false,
   bartenderSpeechTimer: null,
   bartenderSpeechPriority: 0,
+  comboMilestoneTimer: null,
   beatTimer: 0,
   beatStep: 0,
   scoreSaved: false,
@@ -404,6 +430,7 @@ const restartButton = document.getElementById("restartButton");
 const pauseButton = document.getElementById("pauseButton");
 const barStage = document.getElementById("barStage");
 const bartenderSpeech = document.getElementById("bartenderSpeech");
+const comboMilestone = document.getElementById("comboMilestone");
 const bartender = document.getElementById("bartender");
 const bartenderImage = document.getElementById("bartenderImage");
 const drinkButton = document.getElementById("drinkButton");
@@ -481,6 +508,7 @@ playScreenBgm();
 // ゲーム状態を初期化して、判定画面を開始します。
 function startGame() {
   clearBartenderSpeechTimer();
+  clearComboMilestoneTimer();
   clearSpecialTimers();
   Object.assign(state, {
     running: true,
@@ -518,6 +546,7 @@ function startGame() {
     quitByMenu: false,
     bartenderSpeechTimer: null,
     bartenderSpeechPriority: 0,
+    comboMilestoneTimer: null,
     scoreSaved: false
   });
 
@@ -1087,6 +1116,7 @@ function judge(action) {
     const points = fast ? 160 : 110;
     state.combo += 1;
     state.bestCombo = Math.max(state.bestCombo, state.combo);
+    const showedComboMilestone = checkComboMilestone();
     let earnedPoints = points + state.combo * 10;
     if (state.focusMode) earnedPoints *= 2;
     state.score += earnedPoints;
@@ -1097,7 +1127,9 @@ function judge(action) {
     showFeedback(fast ? "PERFECT" : "GOOD", fast ? "perfect" : "good");
     flashStage("correct-flash");
     playCatchSound(fast);
-    showBartenderLine(state.combo > 0 && state.combo % 10 === 0 ? "combo" : "correct");
+    if (!showedComboMilestone) {
+      showBartenderLine(state.combo > 0 && state.combo % 10 === 0 ? "combo" : "correct");
+    }
   } else {
     state.combo = 0;
     state.hp = Math.max(0, state.hp - WRONG_HP_DAMAGE);
@@ -1434,8 +1466,65 @@ function showFeedback(text, className) {
   feedback.classList.add("show");
 }
 
+function checkComboMilestone() {
+  if (state.paused || !state.running || state.combo <= 0) return false;
+  const milestone = COMBO_MILESTONES.find((item) => item.combo === state.combo);
+  if (!milestone) return false;
+
+  showComboMilestone(milestone);
+  triggerComboEffect(milestone);
+  return true;
+}
+
+function showComboMilestone(milestone) {
+  if (!comboMilestone) return;
+  const title = comboMilestone.querySelector(".combo-milestone-title");
+  const subtitle = comboMilestone.querySelector(".combo-milestone-subtitle");
+  if (!title || !subtitle) return;
+
+  title.textContent = milestone.title;
+  subtitle.textContent = milestone.subtitle;
+  comboMilestone.className = `combo-milestone show ${milestone.rank}`;
+
+  clearComboMilestoneTimer(false);
+  state.comboMilestoneTimer = window.setTimeout(() => {
+    comboMilestone.classList.remove("show");
+    state.comboMilestoneTimer = null;
+  }, 1400);
+}
+
+function triggerComboEffect(milestone) {
+  if (!document.body) return;
+  document.body.classList.remove(...COMBO_EFFECT_CLASSES);
+  const effectClass = `combo-effect-${milestone.effect}`;
+  document.body.classList.add(effectClass);
+
+  window.setTimeout(() => {
+    document.body.classList.remove(effectClass);
+  }, 900);
+
+  showBartenderLine("combo", { text: milestone.subtitle });
+  playLevelUpSound();
+}
+
+function clearComboMilestoneTimer(shouldHide = true) {
+  if (state.comboMilestoneTimer) {
+    window.clearTimeout(state.comboMilestoneTimer);
+    state.comboMilestoneTimer = null;
+  }
+
+  if (document.body) {
+    document.body.classList.remove(...COMBO_EFFECT_CLASSES);
+  }
+
+  if (shouldHide && comboMilestone) {
+    comboMilestone.classList.remove("show");
+  }
+}
+
 function endGame() {
   clearBartenderSpeechTimer();
+  clearComboMilestoneTimer();
   clearSpecialTimers();
   state.running = false;
   state.paused = false;
